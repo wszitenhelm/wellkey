@@ -26,20 +26,20 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
             {focus.title}
           </p>
-          <p className="text-lg leading-8 text-foreground">{focus.subtitle}</p>
+          <p className="text-lg leading-7 text-foreground">{focus.subtitle}</p>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <PrimaryButton
-            className="w-full px-3 text-xs"
+            className="w-full px-4 text-sm sm:px-3 sm:text-xs"
             onClick={() => window.dispatchEvent(new CustomEvent("quietly:open-check-in"))}
             type="button"
           >
             Check in
           </PrimaryButton>
-          <SecondaryButton asChild className="w-full px-3 text-xs">
+          <SecondaryButton asChild className="w-full px-4 text-sm sm:px-3 sm:text-xs">
             <Link href="/chat">Talk</Link>
           </SecondaryButton>
-          <SecondaryButton asChild className="w-full px-3 text-xs">
+          <SecondaryButton asChild className="w-full px-4 text-sm sm:px-3 sm:text-xs">
             <Link href="/habits">Take a reset</Link>
           </SecondaryButton>
         </div>

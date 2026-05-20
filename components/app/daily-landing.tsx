@@ -21,7 +21,7 @@ export function DailyLanding({ onSkip, onStartCheckIn }: DailyLandingProps) {
 
   return (
     <div className="fixed inset-0 z-40 bg-[radial-gradient(circle_at_top,rgba(15,118,110,0.18),transparent_34%),linear-gradient(180deg,#f7f5ef_0%,#f0ebdf_100%)] animate-fade-in">
-      <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-between px-6 pb-14 pt-10 text-center">
+      <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-between px-5 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] text-center sm:px-6 sm:pb-14 sm:pt-10">
         <div
           className={`flex w-full flex-1 flex-col items-center transition-all duration-1000 ease-out ${
             isSettled ? "justify-start gap-8 pt-10" : "justify-center gap-0"
@@ -35,7 +35,7 @@ export function DailyLanding({ onSkip, onStartCheckIn }: DailyLandingProps) {
                 : "pointer-events-none translate-y-6 opacity-0"
             }`}
           >
-            <h1 className="font-serif text-5xl leading-none tracking-tight">
+            <h1 className="font-serif text-[2.9rem] leading-none tracking-tight sm:text-5xl">
               {landingContent.title}
             </h1>
             <p className="text-lg leading-8 text-foreground/85">{landingContent.body}</p>

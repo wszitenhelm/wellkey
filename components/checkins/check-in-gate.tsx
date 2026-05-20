@@ -37,14 +37,14 @@ export function CheckInGate({
 
   return (
     <div className="fixed inset-0 z-40 bg-background/90 backdrop-blur-sm">
-      <div className="mx-auto flex h-full w-full max-w-md items-end px-5 pb-14 pt-16">
-        <SoftCard className="flex max-h-full w-full flex-col gap-6 overflow-hidden p-5 animate-fade-in">
-          <div className="flex items-start justify-between gap-4">
+      <div className="mx-auto flex h-full w-full max-w-md items-end px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.9rem)] pt-[calc(env(safe-area-inset-top,0px)+1rem)] sm:px-5 sm:pb-14 sm:pt-16">
+        <SoftCard className="flex max-h-[calc(100dvh-2.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] w-full flex-col gap-5 overflow-hidden p-4 animate-fade-in sm:gap-6 sm:p-5">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
                 How are you feeling today?
               </p>
-              <h2 className="font-serif text-3xl leading-tight">
+              <h2 className="font-serif text-[1.9rem] leading-tight sm:text-3xl">
                 Let's understand how today feels.
               </h2>
               <p className="text-sm text-muted">
@@ -64,7 +64,7 @@ export function CheckInGate({
             <SecondaryButton
               className={
                 mode === "quick"
-                  ? "border-accent bg-accent text-accentForeground"
+                  ? "border-accent bg-accent text-accentForeground shadow-none"
                   : "bg-transparent text-foreground hover:bg-white"
               }
               onClick={() => setMode("quick")}
@@ -75,7 +75,7 @@ export function CheckInGate({
             <SecondaryButton
               className={
                 mode === "regular"
-                  ? "border-accent bg-accent text-accentForeground"
+                  ? "border-accent bg-accent text-accentForeground shadow-none"
                   : "bg-transparent text-foreground hover:bg-white"
               }
               onClick={() => setMode("regular")}
