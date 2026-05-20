@@ -1,0 +1,105 @@
+# Quietly
+
+Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript, Tailwind CSS, and Supabase Postgres. It uses manual auth logic with anonymous login codes, bcrypt password hashing, hashed recovery codes, an httpOnly session cookie, and a Gemini-powered supportive chat.
+
+## Features
+
+- Anonymous account creation with user-chosen `login_code` and generated `recovery_code`
+- No email, phone number, or personal profile data
+- Secure login with `login_code + password`
+- httpOnly signed session cookie
+- Bottom-tab authenticated app flow: `Dashboard`, `Chat`, and `Habits`
+- Supportive workplace chat backed by Gemini
+- Crisis-safe fallback response for self-harm or immediate-danger language
+- Stored chat session summary in Postgres
+- User-owned habits with daily completions and gentle streaks
+- Supabase Postgres schema with Row Level Security
+- Mobile-first UI with reusable shadcn-style components
+
+## Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Supabase Postgres
+- `postgres` for server-side database access
+- `bcryptjs` for password hashing
+- `jose` for signed cookie sessions
+- Gemini API via Google AI Studio key
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create your local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill in `.env.local`:
+
+- `DATABASE_URL`: your Supabase Postgres connection string
+- `SESSION_SECRET`: a random secret with at least 32 characters
+- `GEMINI_API_KEY`: your Google AI Studio Gemini API key
+- `GEMINI_MODEL`: optional, defaults to `gemini-2.5-flash`
+
+4. Run the SQL in [supabase/schema.sql](/Users/wikusia/Desktop/startup/supabase/schema.sql) inside the Supabase SQL editor.
+   If you already created the earlier version of the app, rerun the file so the new `chat_sessions`, `chat_messages`, `habits`, and `habit_completions` tables are added.
+
+5. Start the app:
+
+```bash
+npm run dev
+```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+## Authentication flow
+
+1. User chooses a login code and password.
+2. Server checks whether the login code is available.
+3. Server generates a recovery code like `forest-lamp-river-82`.
+4. The app stores:
+   - `login_code_hash`
+   - `password_hash`
+   - `recovery_code_hash`
+   - `user_id`
+5. A signed httpOnly cookie stores the session after signup or login.
+
+## Chat notes
+
+- The authenticated app includes bottom tabs for `Dashboard`, `Chat`, and `Habits`
+- `Chat` is the only fully implemented tab in MVP v0
+- `Habits` includes 3 starter habits, add-habit support, daily checkoffs, and gentle streak tracking
+- Chat history is stored in Postgres and the latest session summary is updated after each exchange
+- Gemini runs server-side so the API key never reaches the browser
+- Crisis language triggers a direct safety response instead of a model-generated reply
+
+## Security notes
+
+- Passwords are hashed with bcrypt using 12 rounds.
+- Login and recovery codes are stored only as SHA-256 hashes.
+- The app never stores personal identity fields.
+- Chat records are stored per `user_id` and session summary data stays in Postgres.
+- Habits and habit completions are stored per `user_id`.
+- Login lookup uses a `security definer` SQL function so the app can authenticate without exposing full table access.
+
+## Project structure
+
+- `app/`: routes and page-level screens
+- `components/`: reusable UI and feature components
+- `lib/auth/`: auth, session, and validation logic
+- `lib/db/`: database access helpers
+- `lib/actions/`: server actions for auth
+- `supabase/`: SQL schema and RLS policies
+
+## Production notes
+
+- Use the Supabase connection string intended for trusted server-side environments.
+- Set `SESSION_SECRET` to a strong random value in production.
+- Serve the app over HTTPS so secure cookies are always enabled.

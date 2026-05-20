@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family:
+    "Instrument Sans",
+    "Avenir Next",
+    "Segoe UI",
+    sans-serif;
+  background-image:
+    radial-gradient(circle at top, rgba(15, 118, 110, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8f6f1 0%, #f3efe8 100%);
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    "Iowan Old Style",
+    "Palatino Linotype",
+    "Book Antiqua",
+    serif;
+}
+
+a {
+  @apply transition-colors;
+}
+
+::selection {
+  @apply bg-accent text-accentForeground;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes breathe-delayed {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.9;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 9s ease-in-out infinite;
+}
+
+.animate-breathe-delayed {
+  animation: breathe-delayed 11s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 220ms ease-out;
+}
