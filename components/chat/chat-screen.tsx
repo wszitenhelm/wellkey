@@ -67,7 +67,7 @@ export function ChatScreen({ initialMessages }: ChatScreenProps) {
         onQuickReply={(value) => submitMessage(value)}
         quickReplies={chatQuickReplies}
       />
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.6rem)] left-1/2 z-20 w-full max-w-md -translate-x-1/2 px-4 sm:px-5">
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+6.25rem)] left-1/2 z-20 w-full max-w-md -translate-x-1/2 px-4 sm:px-5">
         <ChatComposer
           error={error}
           input={input}

@@ -64,9 +64,11 @@ export function HabitManager({ habits }: HabitManagerProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-2">
       <div className="space-y-2">
-        <h1 className="font-serif text-3xl leading-tight">Small steps for today</h1>
+        <h1 className="pr-4 font-serif text-[2.7rem] leading-[0.95] sm:pr-0 sm:text-3xl sm:leading-tight">
+          Small steps for today
+        </h1>
         <p className="text-sm leading-6 text-muted">
           These are gentle habits. Choose what feels possible.
         </p>

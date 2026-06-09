@@ -20,7 +20,7 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
   const previewHabits = habits.slice(0, 2);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-2">
       <SoftCard className="space-y-5 p-5">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
@@ -48,8 +48,8 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
       <InsightCard body={getMockInsight()} title="A pattern to notice" />
 
       <SoftCard className="space-y-4 p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
               Small steps for today
             </p>
@@ -57,7 +57,7 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
               These are gentle habits. Choose what feels possible.
             </p>
           </div>
-          <Link className="text-sm font-semibold text-accent" href="/habits">
+          <Link className="shrink-0 text-sm font-semibold text-accent" href="/habits">
             See all
           </Link>
         </div>

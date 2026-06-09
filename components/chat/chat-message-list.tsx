@@ -32,7 +32,7 @@ export function ChatMessageList({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto pr-1" ref={containerRef}>
-      <div className="space-y-3 pb-[calc(env(safe-area-inset-bottom,0px)+11rem)]">
+      <div className="space-y-3 pb-[calc(env(safe-area-inset-bottom,0px)+13rem)]">
         <SoftCard className="mr-8 p-5 sm:mr-10">
           <p className="text-sm leading-6 text-foreground">How has work felt today?</p>
           <p className="mt-2 text-sm leading-6 text-muted">
