@@ -26,7 +26,17 @@ export function ChatScreen({ initialInput = "", initialMessages }: ChatScreenPro
 
   function submitMessage(message: string) {
     const trimmedInput = message.trim();
+    const lastUserMessage = [...messages].reverse().find((entry) => entry.role === "user");
+
     if (!trimmedInput) {
+      return;
+    }
+
+    if (
+      !isPending &&
+      messages.at(-1)?.role === "assistant" &&
+      lastUserMessage?.content.trim().toLowerCase() === trimmedInput.toLowerCase()
+    ) {
       return;
     }
 

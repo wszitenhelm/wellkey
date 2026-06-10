@@ -31,6 +31,25 @@ export async function POST(request: Request) {
   try {
     const chatSession = await getOrCreateChatSession(session.userId);
     const recentMessages = await listRecentChatMessages(session.userId, chatSession.id);
+    const latestStoredUserMessage = [...recentMessages].reverse().find(
+      (entry) => entry.role === "user"
+    );
+    const latestStoredAssistantMessage = [...recentMessages].reverse().find(
+      (entry) => entry.role === "assistant"
+    );
+
+    if (
+      latestStoredUserMessage &&
+      latestStoredAssistantMessage &&
+      latestStoredUserMessage.created_at < latestStoredAssistantMessage.created_at &&
+      latestStoredUserMessage.content.trim().toLowerCase() === message.toLowerCase()
+    ) {
+      return NextResponse.json({
+        assistantMessage: latestStoredAssistantMessage,
+        userMessage: latestStoredUserMessage
+      });
+    }
+
     const pendingUserMessage = {
       id: "pending-user-message",
       session_id: chatSession.id,

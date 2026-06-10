@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db/client";
+import { getVisibleChatMessages } from "@/lib/chat/messages";
 import type {
   ChatMessageRecord,
   ChatMessageRole,
@@ -64,7 +65,9 @@ export async function getLatestChatView(userId: string): Promise<ChatViewData> {
     return { session: null, messages: [] };
   }
 
-  const messages = await listChatMessages(userId, session.id);
+  const messages = getVisibleChatMessages(
+    await listRecentChatMessages(userId, session.id, 12)
+  );
 
   return { session, messages };
 }
