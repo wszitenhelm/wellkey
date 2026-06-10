@@ -3,6 +3,36 @@ import { isCrisisMessage } from "@/lib/chat/safety";
 import { generateChatReply } from "@/lib/gemini/client";
 import type { ChatMessageRecord } from "@/lib/types";
 
+function getTopicReply(content: string) {
+  const normalized = content.trim().toLowerCase();
+
+  if (normalized === "workload" || normalized.includes("workload")) {
+    return "That can feel heavy fast. Is it more about too much to do, constant urgency, or not enough time to think?";
+  }
+
+  if (normalized === "meetings" || normalized.includes("meetings")) {
+    return "Meetings can drain a day quickly. Was it more the number of them, the people in them, or not having enough space between them?";
+  }
+
+  if (normalized === "sleep" || normalized.includes("sleep")) {
+    return "Lack of recovery can color everything. Has sleep made today feel more foggy, more emotional, or just harder to get through?";
+  }
+
+  if (normalized === "unclear priorities" || normalized.includes("unclear priorities")) {
+    return "That kind of uncertainty can be exhausting. What feels most unclear right now: what matters most, what can wait, or who is expecting what?";
+  }
+
+  if (normalized === "people" || normalized.includes("people")) {
+    return "People stress can really stay with you. Was it more one difficult person, feeling unsupported, or having to carry everyone else's energy?";
+  }
+
+  if (normalized === "not sure" || normalized.includes("not fully sure")) {
+    return "That makes sense too. When it's hard to name, does today feel more heavy, tense, flat, or scattered?";
+  }
+
+  return null;
+}
+
 function getFallbackAssistantReply(content: string) {
   const normalized = content.trim().toLowerCase();
 
@@ -41,6 +71,11 @@ function getFallbackAssistantReply(content: string) {
 
 function getHeuristicReply(content: string) {
   const normalized = content.trim().toLowerCase();
+  const topicReply = getTopicReply(content);
+
+  if (topicReply) {
+    return topicReply;
+  }
 
   if (normalized === "okay" || normalized === "ok") {
     return "Okay can mean a lot of things. Was it mostly steady, heavy, or somewhere in between?";

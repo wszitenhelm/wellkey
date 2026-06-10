@@ -37,20 +37,22 @@ export const checkInNextSteps = [
 ] as const;
 
 export const chatQuickReplies: { label: string; value: string }[] = [
-  { label: "Workload", value: "Workload" },
-  { label: "Meetings", value: "Meetings" },
-  { label: "Sleep", value: "Sleep" },
-  { label: "Unclear priorities", value: "Unclear priorities" },
-  { label: "People", value: "People" },
-  { label: "Not sure", value: "Not sure" }
+  { label: "Workload", value: "Workload has felt heaviest today." },
+  { label: "Meetings", value: "Meetings have taken a lot out of me today." },
+  { label: "Sleep", value: "Sleep has made work feel harder today." },
+  {
+    label: "Unclear priorities",
+    value: "Unclear priorities have been the hardest part of today."
+  },
+  { label: "People", value: "People at work have felt hardest today." },
+  { label: "Not sure", value: "I'm not fully sure what has felt hardest today." }
 ];
 
 export const reminderNoteCategories: { label: string; value: ReminderNoteKind }[] = [
   { label: "Something good about me", value: "self_kindness" },
   { label: "Gratitude", value: "gratitude" },
   { label: "A small win", value: "small_win" },
-  { label: "Something I handled", value: "something_i_handled" },
-  { label: "What I need today", value: "what_i_need_today" }
+  { label: "Something I handled", value: "something_i_handled" }
 ];
 
 export const habitReflectionOptions: { label: string; value: HabitReflection }[] = [
