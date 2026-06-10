@@ -68,7 +68,8 @@ export async function POST(request: Request) {
       assistantMessage,
       userMessage
     });
-  } catch {
+  } catch (error) {
+    console.error("chat_route_failed", error);
     return NextResponse.json({ error: CHAT_ERROR_MESSAGE }, { status: 500 });
   }
 }
