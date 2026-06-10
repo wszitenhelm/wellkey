@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import type { HabitWithProgress, ReminderNoteRecord } from "@/lib/types";
-import { getDailyFocus, getMockInsight } from "@/lib/content/experience";
+import type { ReminderNoteRecord } from "@/lib/types";
+import { getDailyFocus, getPersonalMessage } from "@/lib/content/experience";
 import { ReminderNoteForm } from "@/components/dashboard/reminder-note-form";
 import { ReminderNoteList } from "@/components/dashboard/reminder-note-list";
 import { InsightCard } from "@/components/dashboard/insight-card";
@@ -11,13 +11,14 @@ import { SecondaryButton } from "@/components/ui/secondary-button";
 import { SoftCard } from "@/components/ui/soft-card";
 
 type DashboardHomeProps = {
-  habits: HabitWithProgress[];
   notes: ReminderNoteRecord[];
 };
 
-export function DashboardHome({ habits, notes }: DashboardHomeProps) {
+const meditationDraft =
+  "Guide me through a short personalized meditation for how work feels today.";
+
+export function DashboardHome({ notes }: DashboardHomeProps) {
   const focus = getDailyFocus();
-  const previewHabits = habits.slice(0, 2);
 
   return (
     <div className="space-y-4 pb-2">
@@ -28,7 +29,7 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
           </p>
           <p className="text-lg leading-7 text-foreground">{focus.subtitle}</p>
         </div>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
           <PrimaryButton
             className="w-full px-4 text-sm sm:px-3 sm:text-xs"
             onClick={() => window.dispatchEvent(new CustomEvent("quietly:open-check-in"))}
@@ -42,34 +43,18 @@ export function DashboardHome({ habits, notes }: DashboardHomeProps) {
           <SecondaryButton asChild className="w-full px-4 text-sm sm:px-3 sm:text-xs">
             <Link href="/habits">Take a reset</Link>
           </SecondaryButton>
+          <SecondaryButton asChild className="w-full px-4 text-sm sm:px-3 sm:text-xs">
+            <Link href={`/chat?draft=${encodeURIComponent(meditationDraft)}`}>
+              Personalized guided meditation
+            </Link>
+          </SecondaryButton>
         </div>
       </SoftCard>
 
-      <InsightCard body={getMockInsight()} title="A pattern to notice" />
-
-      <SoftCard className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
-              Small steps for today
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              These are gentle habits. Choose what feels possible.
-            </p>
-          </div>
-          <Link className="shrink-0 text-sm font-semibold text-accent" href="/habits">
-            See all
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {previewHabits.map((habit) => (
-            <div key={habit.id} className="rounded-[1.65rem] bg-white/70 p-4">
-              <p className="font-semibold text-foreground">{habit.title}</p>
-              <p className="mt-1 text-sm leading-6 text-muted">{habit.description}</p>
-            </div>
-          ))}
-        </div>
-      </SoftCard>
+      <InsightCard
+        body={getPersonalMessage()}
+        title="Especially for you"
+      />
 
       <SoftCard className="space-y-4 p-5">
         <div>

@@ -14,12 +14,13 @@ import { ChatComposer } from "@/components/chat/chat-composer";
 import { ChatMessageList } from "@/components/chat/chat-message-list";
 
 type ChatScreenProps = {
+  initialInput?: string;
   initialMessages: ChatMessageRecord[];
 };
 
-export function ChatScreen({ initialMessages }: ChatScreenProps) {
+export function ChatScreen({ initialInput = "", initialMessages }: ChatScreenProps) {
   const [messages, setMessages] = useState(initialMessages);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialInput);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 

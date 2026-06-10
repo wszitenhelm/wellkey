@@ -24,10 +24,10 @@ export const focusCards = [
   }
 ] as const;
 
-export const insightCards = [
-  "You often feel more drained when work feels unclear.",
-  "Short breaks seem to help your energy recover.",
-  "After heavy days, a small shutdown ritual may help."
+export const personalMessages = [
+  "You are allowed to want a calmer day, not just a more productive one.",
+  "Even when work feels full, your effort and care still matter quietly.",
+  "You do not have to hold everything perfectly to be doing enough today."
 ] as const;
 
 export const checkInNextSteps = [
@@ -63,8 +63,8 @@ export function getDailyFocus() {
   return focusCards[new Date().getDate() % focusCards.length];
 }
 
-export function getMockInsight() {
-  return insightCards[new Date().getDate() % insightCards.length];
+export function getPersonalMessage() {
+  return personalMessages[new Date().getDate() % personalMessages.length];
 }
 
 export function getCompletionStepIndex(factor?: CheckInFactor | null) {
