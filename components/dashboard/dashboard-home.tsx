@@ -3,8 +3,8 @@
 import Link from "next/link";
 import type { ReminderNoteRecord } from "@/lib/types";
 import { getDailyFocus, getPersonalMessage } from "@/lib/content/experience";
+import { LiveReminderNoteList } from "@/components/dashboard/live-reminder-note-list";
 import { ReminderNoteForm } from "@/components/dashboard/reminder-note-form";
-import { ReminderNoteList } from "@/components/dashboard/reminder-note-list";
 import { InsightCard } from "@/components/dashboard/insight-card";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
@@ -12,12 +12,13 @@ import { SoftCard } from "@/components/ui/soft-card";
 
 type DashboardHomeProps = {
   notes: ReminderNoteRecord[];
+  userId: string;
 };
 
 const meditationDraft =
   "Guide me through a short personalized meditation for how work feels today.";
 
-export function DashboardHome({ notes }: DashboardHomeProps) {
+export function DashboardHome({ notes, userId }: DashboardHomeProps) {
   const focus = getDailyFocus();
 
   return (
@@ -64,7 +65,7 @@ export function DashboardHome({ notes }: DashboardHomeProps) {
         <ReminderNoteForm />
       </SoftCard>
 
-      <ReminderNoteList notes={notes} />
+      <LiveReminderNoteList initialNotes={notes} userId={userId} />
     </div>
   );
 }

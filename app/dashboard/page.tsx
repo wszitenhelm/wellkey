@@ -11,7 +11,7 @@ export default async function DashboardPage() {
 
   return (
     <MobileAppShell currentPath="/dashboard">
-      <DashboardHome notes={reminderNotes} />
+      <DashboardHome notes={reminderNotes} userId={session.userId} />
     </MobileAppShell>
   );
 }

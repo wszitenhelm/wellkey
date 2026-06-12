@@ -18,7 +18,6 @@ export function ChatMessageList({
   quickReplies
 }: ChatMessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant")?.id;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -65,20 +64,6 @@ export function ChatMessageList({
               </p>
             ) : null}
             <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{message.content}</p>
-            {message.role === "assistant" && message.id === lastAssistantId ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {quickReplies.map((reply) => (
-                  <button
-                    key={reply.value}
-                    className="rounded-full bg-foreground/5 px-3.5 py-2 text-sm font-medium text-foreground"
-                    onClick={() => onQuickReply(reply.value)}
-                    type="button"
-                  >
-                    {reply.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
           </SoftCard>
         ))}
 

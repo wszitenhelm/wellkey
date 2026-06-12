@@ -1,6 +1,6 @@
 # Quietly
 
-Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript, Tailwind CSS, and Supabase Postgres. It uses manual auth logic with anonymous login codes, bcrypt password hashing, hashed recovery codes, an httpOnly session cookie, and a Gemini-powered supportive chat.
+Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript, Tailwind CSS, and Supabase Postgres. It uses manual auth logic with anonymous login codes, bcrypt password hashing, hashed recovery codes, rolling JWT cookies, CSRF protection, custom Supabase Realtime JWTs, and a Gemini-powered supportive chat.
 
 ## Features
 
@@ -24,7 +24,7 @@ Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript
 - Supabase Postgres
 - `postgres` for server-side database access
 - `bcryptjs` for password hashing
-- `jose` for signed cookie sessions
+- `jose` for signed JWT cookie sessions
 - Gemini API via Google AI Studio key
 
 ## Setup
@@ -47,6 +47,9 @@ cp .env.example .env.local
 - `SESSION_SECRET`: a random secret with at least 32 characters
 - `GEMINI_API_KEY`: your Google AI Studio Gemini API key
 - `GEMINI_MODEL`: optional, defaults to `gemini-2.5-flash`
+- `SUPABASE_JWT_SECRET`: your Supabase project JWT secret, used server-side to mint short-lived Realtime tokens
+- `NEXT_PUBLIC_SUPABASE_URL`: optional, reserved for future Supabase realtime client wiring
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: your Supabase publishable / anon key for Realtime subscriptions
 
 4. Run the SQL in [supabase/schema.sql](/Users/wikusia/Desktop/startup/supabase/schema.sql) inside the Supabase SQL editor.
    If you already created the earlier version of the app, rerun the file so the new `chat_sessions`, `chat_messages`, `habits`, and `habit_completions` tables are added.
@@ -69,7 +72,7 @@ npm run dev
    - `password_hash`
    - `recovery_code_hash`
    - `user_id`
-5. A signed httpOnly cookie stores the session after signup or login.
+5. Signed httpOnly access and refresh cookies store the session after signup or login.
 
 ## Chat notes
 
@@ -84,9 +87,14 @@ npm run dev
 
 - Passwords are hashed with bcrypt using 12 rounds.
 - Login and recovery codes are stored only as SHA-256 hashes.
+- API writes are protected with CSRF validation and origin checks.
+- Access cookies refresh on a rolling 60-minute window, backed by a longer refresh token.
+- API responses include baseline security headers, CORS allowlisting, rate limiting, and request timing metrics.
+- Supabase Realtime uses short-lived custom JWTs minted on the server and refreshed in the browser before expiry.
 - The app never stores personal identity fields.
 - Chat records are stored per `user_id` and session summary data stays in Postgres.
 - Habits and habit completions are stored per `user_id`.
+- External model calls are allowlisted through an SSRF-safe outbound helper.
 - Login lookup uses a `security definer` SQL function so the app can authenticate without exposing full table access.
 
 ## Project structure

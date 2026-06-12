@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useState, useTransition } from "react";
 import { chatQuickReplies } from "@/lib/content/experience";
 import { CHAT_ERROR_MESSAGE } from "@/lib/chat/constants";
+import { useChatRealtime } from "@/lib/chat/realtime";
 import {
   createOptimisticUserMessage,
   replaceOptimisticMessage,
@@ -20,9 +21,23 @@ type ChatScreenProps = {
 
 export function ChatScreen({ initialInput = "", initialMessages }: ChatScreenProps) {
   const [messages, setMessages] = useState(initialMessages);
+  const [sessionId, setSessionId] = useState<string | null>(initialMessages[0]?.session_id ?? null);
   const [input, setInput] = useState(initialInput);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  useChatRealtime({
+    enabled: true,
+    onMessage: (message) =>
+      setMessages((current) => {
+        if (current.some((entry) => entry.id === message.id)) {
+          return current;
+        }
+
+        return [...current, message];
+      }),
+    sessionId
+  });
 
   function submitMessage(message: string) {
     const trimmedInput = message.trim();
@@ -48,7 +63,8 @@ export function ChatScreen({ initialInput = "", initialMessages }: ChatScreenPro
 
     startTransition(async () => {
       try {
-        const { assistantMessage, userMessage } = await sendChatMessage(trimmedInput);
+        const { assistantMessage, userMessage } = await sendChatMessage(trimmedInput, sessionId);
+        setSessionId(userMessage.session_id);
 
         setMessages((current) =>
           replaceOptimisticMessage(current, optimisticUserMessage.id, [

@@ -44,9 +44,9 @@ export function MobileAppShell({
   }, []);
 
   return (
-    <PageShell className="min-h-screen gap-6 px-5 py-6">
+    <PageShell className="gap-6 px-5 py-6">
       <AppTopBar onOpenCheckIn={() => setIsCheckInOpen(true)} />
-      <div className="flex min-h-0 flex-1 flex-col gap-6 pb-[calc(env(safe-area-inset-bottom,0px)+6.75rem)]">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pb-[calc(env(safe-area-inset-bottom,0px)+6.75rem)] pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
         {children}
       </div>
       <BottomNav currentPath={currentPath} />

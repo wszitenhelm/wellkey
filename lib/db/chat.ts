@@ -1,5 +1,4 @@
 import { getDb } from "@/lib/db/client";
-import { getVisibleChatMessages } from "@/lib/chat/messages";
 import type {
   ChatMessageRecord,
   ChatMessageRole,
@@ -10,6 +9,30 @@ import type {
 type ChatSessionRow = ChatSessionRecord;
 type ChatMessageRow = ChatMessageRecord;
 
+function normalizeContent(content: string) {
+  return content.trim().toLowerCase();
+}
+
+function isSameMessage(a: ChatMessageRecord, b: ChatMessageRecord) {
+  return a.role === b.role && normalizeContent(a.content) === normalizeContent(b.content);
+}
+
+function compactChatHistory(messages: ChatMessageRecord[]) {
+  const compacted: ChatMessageRecord[] = [];
+
+  for (const message of messages) {
+    const previous = compacted.at(-1);
+
+    if (previous && isSameMessage(previous, message)) {
+      continue;
+    }
+
+    compacted.push(message);
+  }
+
+  return compacted;
+}
+
 async function findLatestChatSession(userId: string) {
   const db = getDb();
   const sessions = await db<ChatSessionRow[]>`
@@ -17,6 +40,19 @@ async function findLatestChatSession(userId: string) {
     from chat_sessions
     where user_id = ${userId}
     order by updated_at desc
+    limit 1
+  `;
+
+  return sessions[0] ?? null;
+}
+
+async function findChatSessionById(userId: string, sessionId: string) {
+  const db = getDb();
+  const sessions = await db<ChatSessionRow[]>`
+    select id, user_id, summary, created_at, updated_at
+    from chat_sessions
+    where user_id = ${userId}
+      and id = ${sessionId}
     limit 1
   `;
 
@@ -65,9 +101,9 @@ export async function getLatestChatView(userId: string): Promise<ChatViewData> {
     return { session: null, messages: [] };
   }
 
-  const messages = getVisibleChatMessages(
-    await listRecentChatMessages(userId, session.id, 12)
-  );
+  const messages = compactChatHistory(
+    await listRecentChatMessages(userId, session.id, 24)
+  ).slice(-12);
 
   return { session, messages };
 }
@@ -87,6 +123,10 @@ export async function getOrCreateChatSession(userId: string) {
   `;
 
   return sessions[0];
+}
+
+export async function getChatSessionForUser(userId: string, sessionId: string) {
+  return findChatSessionById(userId, sessionId);
 }
 
 export async function createChatMessage(input: {

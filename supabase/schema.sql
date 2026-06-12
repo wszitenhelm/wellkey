@@ -1,5 +1,18 @@
 create extension if not exists pgcrypto;
 
+create or replace function requesting_user_id()
+returns uuid
+language sql
+stable
+as $$
+  select coalesce(
+    nullif(current_setting('app.current_user_id', true), '')::uuid,
+    auth.uid(),
+    nullif(((current_setting('request.jwt.claims', true))::json ->> 'app_user_id'), '')::uuid,
+    nullif(((current_setting('request.jwt.claims', true))::json ->> 'sub'), '')::uuid
+  );
+$$;
+
 create table if not exists app_users (
   user_id uuid primary key default gen_random_uuid(),
   login_code_hash text not null unique,
@@ -129,6 +142,32 @@ before update on chat_sessions
 for each row
 execute function set_updated_at();
 
+do $$
+declare
+  target_table text;
+begin
+  foreach target_table in array array[
+    'chat_sessions',
+    'chat_messages',
+    'habits',
+    'habit_completions',
+    'reminder_notes',
+    'daily_check_ins'
+  ]
+  loop
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = target_table
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', target_table);
+    end if;
+  end loop;
+end
+$$;
+
 alter table app_users enable row level security;
 alter table chat_sessions enable row level security;
 alter table chat_messages enable row level security;
@@ -141,7 +180,7 @@ drop policy if exists "users_can_read_self" on app_users;
 create policy "users_can_read_self"
 on app_users
 for select
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id());
 
 drop policy if exists "allow_anonymous_signup_insert" on app_users;
 create policy "allow_anonymous_signup_insert"
@@ -153,43 +192,51 @@ drop policy if exists "users_can_manage_own_chat_sessions" on chat_sessions;
 create policy "users_can_manage_own_chat_sessions"
 on chat_sessions
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
 
 drop policy if exists "users_can_manage_own_chat_messages" on chat_messages;
 create policy "users_can_manage_own_chat_messages"
 on chat_messages
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
 
 drop policy if exists "users_can_manage_own_habits" on habits;
 create policy "users_can_manage_own_habits"
 on habits
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
 
 drop policy if exists "users_can_manage_own_habit_completions" on habit_completions;
 create policy "users_can_manage_own_habit_completions"
 on habit_completions
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
 
 drop policy if exists "users_can_manage_own_reminder_notes" on reminder_notes;
 create policy "users_can_manage_own_reminder_notes"
 on reminder_notes
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
 
 drop policy if exists "users_can_manage_own_daily_check_ins" on daily_check_ins;
 create policy "users_can_manage_own_daily_check_ins"
 on daily_check_ins
 for all
-using (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid)
-with check (user_id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+using (user_id = requesting_user_id())
+with check (user_id = requesting_user_id());
+
+grant usage on schema public to authenticated;
+grant select on public.chat_sessions to authenticated;
+grant select on public.chat_messages to authenticated;
+grant select on public.habits to authenticated;
+grant select on public.habit_completions to authenticated;
+grant select on public.reminder_notes to authenticated;
+grant select on public.daily_check_ins to authenticated;
 
 create or replace function get_user_auth_by_login_code_hash(p_login_code_hash text)
 returns table (

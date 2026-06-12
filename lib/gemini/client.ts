@@ -1,4 +1,5 @@
-import { getEnv } from "@/lib/config/env";
+import { getEnv } from "@/lib/env/settings";
+import { assertSafeOutboundUrl } from "@/lib/security/ssrf";
 import { CHAT_SYSTEM_INSTRUCTION } from "@/lib/chat/constants";
 import type { ChatMessageRecord } from "@/lib/types";
 
@@ -22,8 +23,14 @@ function toGeminiRole(role: ChatMessageRecord["role"]) {
 
 export async function generateChatReply(messages: ChatMessageRecord[]) {
   const env = getEnv();
-  const response = await fetch(
+  const url = assertSafeOutboundUrl(
     `https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`,
+    {
+      allowedHosts: ["generativelanguage.googleapis.com"]
+    }
+  );
+  const response = await fetch(
+    url,
     {
       method: "POST",
       headers: {

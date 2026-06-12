@@ -1,5 +1,7 @@
 .next
+.next_broken_*
 node_modules
 .env.local
 dist
 tsconfig.tsbuildinfo
+.vercel

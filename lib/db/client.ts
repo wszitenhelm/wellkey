@@ -1,5 +1,5 @@
 import postgres from "postgres";
-import { getEnv } from "@/lib/config/env";
+import { getEnv } from "@/lib/env/settings";
 
 let cachedDb: ReturnType<typeof postgres> | null = null;
 

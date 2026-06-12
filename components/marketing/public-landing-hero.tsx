@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { LandingBreathingGraphic } from "@/components/app/landing-breathing-graphic";
@@ -5,37 +8,66 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { SecondaryButton } from "@/components/ui/secondary-button";
 
 export function PublicLandingHero() {
+  const [isSettled, setIsSettled] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsSettled(true), 1800);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
-    <section className="space-y-6 text-center">
-      <div className="scale-[1.45] pb-10 pt-8">
-        <div className="mx-auto w-full">
+    <section className="relative min-h-[100dvh] overflow-hidden text-center">
+      <div
+        className={`absolute inset-0 z-0 transition-all duration-[1800ms] ease-out ${
+          isSettled
+            ? "bg-white/0 opacity-0 backdrop-blur-none"
+            : "bg-[#f7f4ec]/85 opacity-100 backdrop-blur-xl"
+        }`}
+      />
+      <div
+        className={`absolute inset-x-0 z-10 transition-all duration-[1800ms] ease-out ${
+          isSettled ? "top-0 translate-y-0" : "top-1/2 -translate-y-1/2"
+        }`}
+      >
+        <div
+          className={`mx-auto transition-all duration-[1800ms] ease-out ${
+            isSettled
+              ? "w-full scale-[1.45] px-0 pb-10 pt-[max(env(safe-area-inset-top),2rem)]"
+              : "w-full scale-[3.35] px-0"
+          }`}
+        >
           <LandingBreathingGraphic />
         </div>
       </div>
-      <div className="space-y-3">
-        <h1 className="font-serif text-5xl leading-none tracking-tight">
-          A quiet private space for work-life balance.
-        </h1>
-        <p className="mx-auto max-w-sm text-base leading-7 text-muted">
-          Anonymous check-ins, small habits, and supportive reflection for days
-          that feel a little too full.
+
+      <div
+        className={`relative z-20 flex min-h-[100dvh] flex-col justify-end pb-[calc(env(safe-area-inset-bottom,0px)+2rem)] pt-[max(env(safe-area-inset-top),1.5rem)] transition-all delay-[900ms] duration-[900ms] ease-out ${
+          isSettled
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-8 opacity-0"
+        }`}
+      >
+        <div className="space-y-3">
+          <h1 className="font-serif text-5xl leading-none tracking-tight">
+            A quiet private space for work-life balance.
+          </h1>
+        </div>
+
+        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          Private. Anonymous. Just for you.
         </p>
-      </div>
 
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
-        Private. Anonymous. Just for you.
-      </p>
-
-      <div className="flex flex-col gap-3">
-        <PrimaryButton asChild className="w-full">
-          <Link href="/signup">
-            Create anonymous account
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </PrimaryButton>
-        <SecondaryButton asChild className="w-full">
-          <Link href="/login">Log in</Link>
-        </SecondaryButton>
+        <div className="mt-6 flex flex-col gap-3">
+          <PrimaryButton asChild className="w-full">
+            <Link href="/signup">
+              Create anonymous account
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </PrimaryButton>
+          <SecondaryButton asChild className="w-full">
+            <Link href="/login">Log in</Link>
+          </SecondaryButton>
+        </div>
       </div>
     </section>
   );
