@@ -128,3 +128,39 @@ export type DailyCheckInRecord = {
   regular_q10_priorities_clear: number | null;
   created_at: string;
 };
+
+export type ManagerSignalKey = "burnout" | "sleep" | "priorities" | "support";
+
+export type ManagerSignal = {
+  key: ManagerSignalKey;
+  label: string;
+  summary: string;
+  score: number | null;
+  percent: number | null;
+  trend: number | null;
+  level: "steady" | "watch" | "elevated" | "critical";
+};
+
+export type ManagerFactor = {
+  label: string;
+  count: number;
+  share: number;
+};
+
+export type ManagerRecommendation = {
+  title: string;
+  body: string;
+};
+
+export type ManagerDashboardData = {
+  signals: ManagerSignal[];
+  topFactors: ManagerFactor[];
+  recommendations: ManagerRecommendation[];
+  summary: {
+    checkInCount: number;
+    responderCount: number;
+    quickCount: number;
+    regularCount: number;
+    windowDays: number;
+  };
+};
