@@ -1,5 +1,5 @@
 import type { ChatMessageRecord } from "@/lib/types";
-import { readBrowserCsrfToken } from "@/lib/security/csrf/client";
+import { getCsrfToken } from "@/lib/security/csrf/client";
 
 type ChatApiResponse = {
   assistantMessage?: ChatMessageRecord;
@@ -30,11 +30,12 @@ export function replaceOptimisticMessage(
 }
 
 export async function sendChatMessage(message: string, sessionId?: string | null) {
+  const csrfToken = await getCsrfToken();
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": readBrowserCsrfToken()
+      "X-CSRF-Token": csrfToken
     },
     body: JSON.stringify({ message, sessionId })
   });

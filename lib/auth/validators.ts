@@ -14,6 +14,8 @@ const loginCodeSchema = z
 
 export const signupSchema = z.object({
   loginCode: loginCodeSchema,
+  organizationCode: z.string().trim().max(32, "Organization code is too long.").optional(),
+  organizationSlug: z.string().trim().max(120, "Organization slug is too long.").optional(),
   password: z
     .string()
     .min(10, "Password must be at least 10 characters.")
@@ -22,6 +24,26 @@ export const signupSchema = z.object({
 
 export const loginSchema = z.object({
   loginCode: loginCodeSchema,
+  organizationCode: z.string().trim().max(32, "Organization code is too long.").optional(),
+  organizationSlug: z.string().trim().max(120, "Organization slug is too long.").optional(),
+  password: z.string().min(1, "Enter your password.")
+});
+
+export const organizationSignupSchema = z.object({
+  companyName: z
+    .string()
+    .trim()
+    .min(2, "Enter your company name.")
+    .max(160, "Company name is too long."),
+  email: z.email("Enter a valid work email.").transform((value) => value.trim().toLowerCase()),
+  password: z
+    .string()
+    .min(10, "Password must be at least 10 characters.")
+    .max(128, "Password is too long.")
+});
+
+export const organizationLoginSchema = z.object({
+  email: z.email("Enter a valid work email.").transform((value) => value.trim().toLowerCase()),
   password: z.string().min(1, "Enter your password.")
 });
 

@@ -1,4 +1,5 @@
-import { getDb } from "@/lib/db/client";
+import { unwrapSupabaseData } from "@/lib/supabase/errors";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type {
   ChatMessageRecord,
   ChatMessageRole,
@@ -34,64 +35,59 @@ function compactChatHistory(messages: ChatMessageRecord[]) {
 }
 
 async function findLatestChatSession(userId: string) {
-  const db = getDb();
-  const sessions = await db<ChatSessionRow[]>`
-    select id, user_id, summary, created_at, updated_at
-    from chat_sessions
-    where user_id = ${userId}
-    order by updated_at desc
-    limit 1
-  `;
-
-  return sessions[0] ?? null;
+  const supabase = getSupabaseAdmin();
+  return (
+    unwrapSupabaseData(
+      await supabase
+        .from("chat_sessions")
+        .select("id, user_id, summary, created_at, updated_at")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ) as ChatSessionRow | null
+  ) ?? null;
 }
 
 async function findChatSessionById(userId: string, sessionId: string) {
-  const db = getDb();
-  const sessions = await db<ChatSessionRow[]>`
-    select id, user_id, summary, created_at, updated_at
-    from chat_sessions
-    where user_id = ${userId}
-      and id = ${sessionId}
-    limit 1
-  `;
-
-  return sessions[0] ?? null;
+  const supabase = getSupabaseAdmin();
+  return (
+    unwrapSupabaseData(
+      await supabase
+        .from("chat_sessions")
+        .select("id, user_id, summary, created_at, updated_at")
+        .eq("user_id", userId)
+        .eq("id", sessionId)
+        .maybeSingle()
+    ) as ChatSessionRow | null
+  ) ?? null;
 }
 
 async function listChatMessages(userId: string, sessionId: string, newestFirst = false, limit?: number) {
-  const db = getDb();
+  const supabase = getSupabaseAdmin();
+  let query = supabase
+    .from("chat_messages")
+    .select("id, session_id, user_id, role, content, created_at")
+    .eq("user_id", userId)
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: !newestFirst });
 
   if (newestFirst && limit) {
-    const messages = await db<ChatMessageRow[]>`
-      select id, session_id, user_id, role, content, created_at
-      from chat_messages
-      where user_id = ${userId}
-        and session_id = ${sessionId}
-      order by created_at desc
-      limit ${limit}
-    `;
-
-    return messages;
+    query = query.limit(limit);
   }
 
-  return db<ChatMessageRow[]>`
-    select id, session_id, user_id, role, content, created_at
-    from chat_messages
-    where user_id = ${userId}
-      and session_id = ${sessionId}
-    order by created_at asc
-  `;
+  return (unwrapSupabaseData(await query) as ChatMessageRow[] | null) ?? [];
 }
 
 async function touchChatSession(sessionId: string, userId: string) {
-  const db = getDb();
-  await db`
-    update chat_sessions
-    set updated_at = timezone('utc', now())
-    where id = ${sessionId}
-      and user_id = ${userId}
-  `;
+  const supabase = getSupabaseAdmin();
+  unwrapSupabaseData(
+    await supabase
+      .from("chat_sessions")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+  );
 }
 
 export async function getLatestChatView(userId: string): Promise<ChatViewData> {
@@ -115,14 +111,20 @@ export async function getOrCreateChatSession(userId: string) {
     return existingSession;
   }
 
-  const db = getDb();
-  const sessions = await db<ChatSessionRow[]>`
-    insert into chat_sessions (user_id)
-    values (${userId})
-    returning id, user_id, summary, created_at, updated_at
-  `;
+  const supabase = getSupabaseAdmin();
+  const session = unwrapSupabaseData(
+    await supabase
+      .from("chat_sessions")
+      .insert({ user_id: userId })
+      .select("id, user_id, summary, created_at, updated_at")
+      .single()
+  ) as ChatSessionRow | null;
 
-  return sessions[0];
+  if (!session) {
+    throw new Error("CHAT_SESSION_CREATE_FAILED");
+  }
+
+  return session;
 }
 
 export async function getChatSessionForUser(userId: string, sessionId: string) {
@@ -135,16 +137,27 @@ export async function createChatMessage(input: {
   role: ChatMessageRole;
   content: string;
 }) {
-  const db = getDb();
-  const messages = await db<ChatMessageRow[]>`
-    insert into chat_messages (session_id, user_id, role, content)
-    values (${input.sessionId}, ${input.userId}, ${input.role}, ${input.content})
-    returning id, session_id, user_id, role, content, created_at
-  `;
+  const supabase = getSupabaseAdmin();
+  const message = unwrapSupabaseData(
+    await supabase
+      .from("chat_messages")
+      .insert({
+        content: input.content,
+        role: input.role,
+        session_id: input.sessionId,
+        user_id: input.userId
+      })
+      .select("id, session_id, user_id, role, content, created_at")
+      .single()
+  ) as ChatMessageRow | null;
 
   await touchChatSession(input.sessionId, input.userId);
 
-  return messages[0];
+  if (!message) {
+    throw new Error("CHAT_MESSAGE_CREATE_FAILED");
+  }
+
+  return message;
 }
 
 export async function listRecentChatMessages(userId: string, sessionId: string, limit = 12) {
@@ -153,12 +166,15 @@ export async function listRecentChatMessages(userId: string, sessionId: string, 
 }
 
 export async function updateChatSessionSummary(sessionId: string, userId: string, summary: string) {
-  const db = getDb();
-  await db`
-    update chat_sessions
-    set summary = ${summary},
-        updated_at = timezone('utc', now())
-    where id = ${sessionId}
-      and user_id = ${userId}
-  `;
+  const supabase = getSupabaseAdmin();
+  unwrapSupabaseData(
+    await supabase
+      .from("chat_sessions")
+      .update({
+        summary,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+  );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { signupAction } from "@/lib/actions/auth-actions";
+import { useState, useTransition } from "react";
+import { signupWithApi } from "@/lib/auth/api";
 import { AuthField } from "@/components/auth/auth-field";
 import { AuthLinkPrompt } from "@/components/auth/auth-link-prompt";
 import type { SignupActionState } from "@/lib/types";
@@ -10,10 +10,41 @@ import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import Link from "next/link";
 
-const initialState: SignupActionState = {};
+type SignupFormProps = {
+  organizationName?: string;
+  organizationSlug?: string;
+  showOrganizationCode?: boolean;
+};
 
-export function SignupForm() {
-  const [state, formAction, pending] = useActionState(signupAction, initialState);
+export function SignupForm({
+  organizationName,
+  organizationSlug,
+  showOrganizationCode = true
+}: SignupFormProps) {
+  const [state, setState] = useState<SignupActionState>({});
+  const [pending, startTransition] = useTransition();
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      try {
+        setState({});
+        const response = await signupWithApi({
+          loginCode: String(formData.get("loginCode") ?? ""),
+          organizationCode: String(formData.get("organizationCode") ?? ""),
+          organizationSlug,
+          password: String(formData.get("password") ?? "")
+        });
+        setState({ credentials: response.credentials });
+      } catch (error) {
+        setState({
+          error:
+            error instanceof Error
+              ? error.message
+              : "We could not create your account. Please try again."
+        });
+      }
+    });
+  }
 
   if (state.credentials) {
     return (
@@ -30,7 +61,20 @@ export function SignupForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={handleSubmit} className="space-y-4">
+      {organizationName ? (
+        <div className="rounded-[1.5rem] bg-accent/8 p-4 text-sm text-foreground">
+          Joining anonymously under <span className="font-semibold">{organizationName}</span>.
+        </div>
+      ) : null}
+      {showOrganizationCode ? (
+        <AuthField
+          autoCapitalize="characters"
+          label="Organization code"
+          name="organizationCode"
+          placeholder="AB12CD34"
+        />
+      ) : null}
       <AuthField
         autoCapitalize="none"
         label="Create a login code"
@@ -50,7 +94,11 @@ export function SignupForm() {
         {pending ? "Creating..." : "Create an account"}
       </Button>
 
-      <AuthLinkPrompt href="/login" label="Log in" prefix="Already have a login code?" />
+      <AuthLinkPrompt
+        href={organizationSlug ? `/${organizationSlug}/login` : "/login"}
+        label="Log in"
+        prefix="Already have a login code?"
+      />
     </form>
   );
 }

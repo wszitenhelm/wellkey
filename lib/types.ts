@@ -6,6 +6,137 @@ export type SessionPayload = {
   userId: string;
 };
 
+export type OrganizationSessionPayload = {
+  organizationId: string;
+  organizationUserId: string;
+  permissions: string[];
+};
+
+export type OrganizationPermissionKey =
+  | "manage_company_profile"
+  | "manage_domains"
+  | "view_org_members"
+  | "manage_org_members"
+  | "manage_role_permissions"
+  | "view_org_overview"
+  | "view_team_breakdowns"
+  | "view_reports"
+  | "manage_reports"
+  | "view_audit_logs";
+
+export type OrganizationDomainRecord = {
+  id: string;
+  domain: string;
+  verification_token: string;
+  verification_method: "dns_txt" | "email";
+  verified_at: string | null;
+  created_at: string;
+};
+
+export type OrganizationRecord = {
+  id: string;
+  slug: string;
+  join_code: string | null;
+  legal_name: string;
+  display_name: string;
+  logo_url: string | null;
+  primary_domain: string | null;
+  website_url: string | null;
+  verification_status: "pending" | "verified" | "rejected";
+  address_line_1: string | null;
+  address_line_2: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
+  billing_address: { text?: string } | null;
+};
+
+export type OrganizationSettingsRecord = {
+  minimum_reporting_threshold: number;
+  allow_domain_join: boolean;
+  allow_invite_join: boolean;
+  show_team_breakdowns: boolean;
+  show_export_button: boolean;
+};
+
+export type OrganizationWorkspaceData = {
+  organization: OrganizationRecord;
+  domains: OrganizationDomainRecord[];
+  settings: OrganizationSettingsRecord;
+  orgUser: {
+    id: string;
+    email: string;
+  };
+  permissions: OrganizationPermissionKey[];
+};
+
+export type OrganizationRoleRecord = {
+  id: string;
+  key: string;
+  name: string;
+  is_system: boolean;
+};
+
+export type OrganizationPermissionRecord = {
+  id: string;
+  key: OrganizationPermissionKey;
+  name: string;
+  description: string;
+};
+
+export type OrganizationAccessRole = OrganizationRoleRecord & {
+  permissionKeys: OrganizationPermissionKey[];
+};
+
+export type OrganizationAccessUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  status: "active" | "invited" | "disabled";
+  roleIds: string[];
+};
+
+export type OrganizationAccessData = {
+  permissions: OrganizationPermissionRecord[];
+  roles: OrganizationAccessRole[];
+  users: OrganizationAccessUser[];
+};
+
+export type OrganizationTeamRecord = {
+  id: string;
+  organization_id: string;
+  slug: string;
+  name: string;
+  parent_team_id: string | null;
+  created_at: string;
+};
+
+export type OrganizationAnonymousMember = {
+  id: string;
+  org_scoped_employee_id: string;
+  join_method: "invite" | "domain" | "code";
+  created_at: string;
+  teamIds: string[];
+};
+
+export type OrganizationTeamsData = {
+  members: OrganizationAnonymousMember[];
+  teams: OrganizationTeamRecord[];
+};
+
+export type OrganizationReportHistoryItem = {
+  created_at: string;
+  export_format: "pdf" | "csv" | "json";
+  file_url: string | null;
+  id: string;
+  metadata: Record<string, unknown>;
+  period_end: string;
+  period_start: string;
+  report_id: string;
+  report_type: "pdf" | "csv";
+  status: "pending" | "processing" | "ready" | "failed";
+};
+
 export type CreatedCredentials = {
   loginCode: string;
   recoveryCode: string;

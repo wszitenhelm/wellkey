@@ -1,6 +1,6 @@
 # Quietly
 
-Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript, Tailwind CSS, and Supabase Postgres. It uses manual auth logic with anonymous login codes, bcrypt password hashing, hashed recovery codes, rolling JWT cookies, CSRF protection, custom Supabase Realtime JWTs, and a Gemini-powered supportive chat.
+Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript, Tailwind CSS, and Supabase. It uses manual auth logic with anonymous login codes, bcrypt password hashing, hashed recovery codes, rolling JWT cookies, Supabase JS / Data API access, custom Supabase Realtime JWTs, and a Gemini-powered supportive chat.
 
 ## Features
 
@@ -11,9 +11,9 @@ Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript
 - Bottom-tab authenticated app flow: `Dashboard`, `Chat`, and `Habits`
 - Supportive workplace chat backed by Gemini
 - Crisis-safe fallback response for self-harm or immediate-danger language
-- Stored chat session summary in Postgres
+- Stored chat session summary in Supabase
 - User-owned habits with daily completions and gentle streaks
-- Supabase Postgres schema with Row Level Security
+- Supabase tables with Row Level Security
 - Mobile-first UI with reusable shadcn-style components
 
 ## Stack
@@ -21,8 +21,8 @@ Quietly is a mobile-first anonymous wellbeing app built with Next.js, TypeScript
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- Supabase Postgres
-- `postgres` for server-side database access
+- Supabase Data API and Realtime
+- `@supabase/supabase-js` for server and browser data access
 - `bcryptjs` for password hashing
 - `jose` for signed JWT cookie sessions
 - Gemini API via Google AI Studio key
@@ -43,12 +43,12 @@ cp .env.example .env.local
 
 3. Fill in `.env.local`:
 
-- `DATABASE_URL`: your Supabase Postgres connection string
 - `SESSION_SECRET`: a random secret with at least 32 characters
+- `SUPABASE_SERVICE_ROLE_KEY`: your server-only Supabase service role key
 - `GEMINI_API_KEY`: your Google AI Studio Gemini API key
 - `GEMINI_MODEL`: optional, defaults to `gemini-2.5-flash`
 - `SUPABASE_JWT_SECRET`: your Supabase project JWT secret, used server-side to mint short-lived Realtime tokens
-- `NEXT_PUBLIC_SUPABASE_URL`: optional, reserved for future Supabase realtime client wiring
+- `NEXT_PUBLIC_SUPABASE_URL`: your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: your Supabase publishable / anon key for Realtime subscriptions
 
 4. Run the SQL in [supabase/schema.sql](/Users/wikusia/Desktop/startup/supabase/schema.sql) inside the Supabase SQL editor.
@@ -79,7 +79,7 @@ npm run dev
 - The authenticated app includes bottom tabs for `Dashboard`, `Chat`, and `Habits`
 - `Chat` is the only fully implemented tab in MVP v0
 - `Habits` includes 3 starter habits, add-habit support, daily checkoffs, and gentle streak tracking
-- Chat history is stored in Postgres and the latest session summary is updated after each exchange
+- Chat history is stored in Supabase and the latest session summary is updated after each exchange
 - Gemini runs server-side so the API key never reaches the browser
 - Crisis language triggers a direct safety response instead of a model-generated reply
 
@@ -92,10 +92,10 @@ npm run dev
 - API responses include baseline security headers, CORS allowlisting, rate limiting, and request timing metrics.
 - Supabase Realtime uses short-lived custom JWTs minted on the server and refreshed in the browser before expiry.
 - The app never stores personal identity fields.
-- Chat records are stored per `user_id` and session summary data stays in Postgres.
+- Chat records are stored per `user_id` and session summary data stays in Supabase.
 - Habits and habit completions are stored per `user_id`.
 - External model calls are allowlisted through an SSRF-safe outbound helper.
-- Login lookup uses a `security definer` SQL function so the app can authenticate without exposing full table access.
+- Server-side data writes use the Supabase service role key and manually scope every query by `user_id`.
 
 ## Project structure
 
@@ -108,6 +108,6 @@ npm run dev
 
 ## Production notes
 
-- Use the Supabase connection string intended for trusted server-side environments.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` server-only and never expose it to the browser.
 - Set `SESSION_SECRET` to a strong random value in production.
 - Serve the app over HTTPS so secure cookies are always enabled.

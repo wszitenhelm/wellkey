@@ -1,4 +1,9 @@
 import { verifyPassword } from "@/lib/auth/password";
+import {
+  getOrganizationJoinContextByCode,
+  getOrganizationJoinContextBySlug,
+  linkAnonymousUserToOrganization
+} from "@/lib/db/organization-joins";
 import { findUserForLogin } from "@/lib/db/users";
 import type { AuthenticatedUser } from "@/lib/types";
 
@@ -23,4 +28,30 @@ export async function authenticateUser(loginCode: string, password: string): Pro
     status: "success",
     user
   };
+}
+
+export async function linkUserAfterLogin(input: {
+  organizationCode?: string;
+  organizationSlug?: string;
+  userId: string;
+}) {
+  const organizationContext = input.organizationSlug
+    ? await getOrganizationJoinContextBySlug(input.organizationSlug)
+    : input.organizationCode
+      ? await getOrganizationJoinContextByCode(input.organizationCode)
+      : null;
+
+  if (!organizationContext?.organization_seed) {
+    if (input.organizationCode || input.organizationSlug) {
+      throw new Error("INVALID_ORGANIZATION");
+    }
+    return;
+  }
+
+  await linkAnonymousUserToOrganization({
+    joinMethod: input.organizationSlug ? "domain" : "code",
+    organizationId: organizationContext.id,
+    organizationSeed: organizationContext.organization_seed,
+    userId: input.userId
+  });
 }

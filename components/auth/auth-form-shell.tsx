@@ -9,11 +9,15 @@ type AuthFormShellProps = {
 
 export function AuthFormShell({ title, description, children }: AuthFormShellProps) {
   return (
-    <SoftCard className="p-6">
+    <SoftCard className="mx-auto w-full max-w-[34rem] rounded-[2rem] border border-black/5 bg-white/80 p-6 shadow-soft sm:p-8 lg:p-10">
       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent">Your space</p>
-      <h1 className="mt-3 font-[family-name:var(--font-heading)] text-3xl leading-tight">{title}</h1>
-      <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
-      <div className="mt-6">{children}</div>
+      <h1 className="mt-4 text-[clamp(2rem,4vw,3.25rem)] font-[family-name:var(--font-heading)] leading-[0.96]">
+        {title}
+      </h1>
+      <p className="mt-4 max-w-xl text-sm leading-6 text-muted sm:text-[0.98rem]">
+        {description}
+      </p>
+      <div className="mt-8">{children}</div>
     </SoftCard>
   );
 }
