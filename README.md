@@ -111,3 +111,27 @@ npm run dev
 - Keep `SUPABASE_SERVICE_ROLE_KEY` server-only and never expose it to the browser.
 - Set `SESSION_SECRET` to a strong random value in production.
 - Serve the app over HTTPS so secure cookies are always enabled.
+
+## GitHub Actions
+
+This repo includes two workflows in `.github/workflows/`:
+
+- `ci.yml`
+  Runs `npm ci`, `npm run typecheck`, and `npm run build` on pull requests to `main` and pushes to `main`.
+- `deploy-vercel.yml`
+  Deploys to Vercel only after the `CI` workflow succeeds on a push to `main`.
+
+To enable safe Vercel deploys from GitHub, add these repository secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+Recommended GitHub protection:
+
+1. Open GitHub `Settings -> Branches`.
+2. Add a branch protection rule for `main`.
+3. Require status checks to pass before merging.
+4. Select the `CI / verify` check.
+
+That way broken code can still be committed locally, but it cannot be merged to `main`, and production deploy will not run unless CI passes first.
