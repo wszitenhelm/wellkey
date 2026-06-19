@@ -1,3 +1,4 @@
+import { ManagerCopyCard } from "@/components/manager/manager-copy-card";
 import { ManagerDomainCard } from "@/components/manager/manager-domain-card";
 import { ManagerLogoUploadForm } from "@/components/manager/manager-logo-upload-form";
 import { ManagerSettingsForm } from "@/components/manager/manager-settings-form";
@@ -32,17 +33,18 @@ export default async function ManagerSettingsPage() {
           Employee entry
         </p>
         <h2 className="mt-3 font-serif text-3xl leading-[0.96]">Shareable organization access</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+          Use the slug path for smoother sign-up, or keep the join code available for flexible onboarding.
+        </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-[1.5rem] border border-border/70 bg-white/70 p-4">
-            <p className="text-sm text-muted">Slug path</p>
-            <p className="mt-2 break-all font-medium">
-              /{workspace.organization.slug}/sign-up
-            </p>
-          </div>
-          <div className="rounded-[1.5rem] border border-border/70 bg-white/70 p-4">
-            <p className="text-sm text-muted">Join code</p>
-            <p className="mt-2 font-medium">{workspace.organization.join_code ?? "Pending"}</p>
-          </div>
+          <ManagerCopyCard
+            label="Slug path"
+            value={`/${workspace.organization.slug}/sign-up`}
+          />
+          <ManagerCopyCard
+            label="Join code"
+            value={workspace.organization.join_code ?? "Pending"}
+          />
         </div>
       </SoftCard>
 

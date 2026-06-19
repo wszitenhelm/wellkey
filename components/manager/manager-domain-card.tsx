@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ManagerDomainItem } from "@/components/manager/manager-domain-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormMessage } from "@/components/ui/form-message";
@@ -59,33 +60,38 @@ export function ManagerDomainCard({ domains }: Props) {
 
   return (
     <div className="space-y-4">
-      <form action={handleSubmit} className="flex flex-col gap-3 md:flex-row">
-        <Input className="flex-1" name="domain" placeholder="company.com" />
-        <Button disabled={pending} type="submit">{pending ? "Adding..." : "Add domain"}</Button>
-      </form>
+      <div className="rounded-[1.75rem] bg-accent/5 p-4 sm:p-5">
+        <p className="text-sm leading-6 text-muted">
+          Add your company domain to make verification smoother and prepare for trusted organization joining.
+        </p>
+        <form action={handleSubmit} className="mt-4 flex flex-col gap-3 md:flex-row">
+          <Input className="flex-1" name="domain" placeholder="company.com" />
+          <Button disabled={pending} type="submit">
+            {pending ? "Adding..." : "Add domain"}
+          </Button>
+        </form>
+      </div>
       <FormMessage state={state} />
+      <div className="rounded-[1.75rem] border border-border/70 bg-white/70 p-4 sm:p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent">
+          Verification flow
+        </p>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Add the TXT record, wait for DNS to update, and then verify ownership here. Once confirmed, the domain can become a trusted signal for your workspace.
+        </p>
+      </div>
       <div className="space-y-3">
         {domains.length === 0 ? (
-          <p className="text-sm text-muted">No verified domains yet.</p>
+          <p className="text-sm text-muted">No domains added yet.</p>
         ) : (
           domains.map((domain) => (
-            <div key={domain.id} className="rounded-2xl border border-border/70 bg-white/70 p-4">
-              <p className="font-medium">{domain.domain}</p>
-              <p className="mt-2 text-xs text-muted">Add TXT record: {domain.verification_token}</p>
-              <p className="mt-2 text-xs uppercase tracking-[0.2em] text-accent">
-                {domain.verified_at ? "Verified" : "Pending verification"}
-              </p>
-              {!domain.verified_at ? (
-                <Button
-                  className="mt-3"
-                  disabled={pending}
-                  onClick={() => handleVerify(domain.id)}
-                  type="button"
-                >
-                  {verifyingId === domain.id ? "Checking..." : "Verify now"}
-                </Button>
-              ) : null}
-            </div>
+            <ManagerDomainItem
+              key={domain.id}
+              disabled={pending}
+              domain={domain}
+              onVerify={handleVerify}
+              verifying={verifyingId === domain.id}
+            />
           ))
         )}
       </div>

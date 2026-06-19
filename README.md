@@ -105,6 +105,7 @@ npm run dev
 - `lib/db/`: database access helpers
 - `lib/actions/`: server actions for auth
 - `supabase/`: SQL schema and RLS policies
+- `docs/ARCHITECTURE.md`: detailed system architecture document
 
 ## Production notes
 
