@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NODE_ENV: production
       SESSION_SECRET: ci-session-secret-1234567890-abcdef
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key
       SUPABASE_JWT_SECRET: ci-supabase-jwt-secret-1234567890
@@ -42,4 +41,6 @@ jobs:
         run: npm run typecheck
 
       - name: Build
+        env:
+          NODE_ENV: production
         run: npm run build
