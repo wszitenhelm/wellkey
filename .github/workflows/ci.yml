@@ -22,7 +22,7 @@ jobs:
       SUPABASE_JWT_SECRET: ci-supabase-jwt-secret-1234567890
       GEMINI_API_KEY: ci-gemini-key
       GEMINI_MODEL: gemini-2.5-flash
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_URL: https://vjyqggswmlrgpvxycvdf.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
     steps:
       - name: Check out repository
