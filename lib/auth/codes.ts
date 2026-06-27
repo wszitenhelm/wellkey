@@ -29,6 +29,10 @@ export function normalizeLoginCode(value: string) {
   return value.trim().toLowerCase();
 }
 
+export function normalizeRecoveryCode(value: string) {
+  return value.trim().toLowerCase();
+}
+
 export function hashIdentifier(value: string) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }

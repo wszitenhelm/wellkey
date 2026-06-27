@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { normalizeLoginCode } from "@/lib/auth/codes";
+import { normalizeLoginCode, normalizeRecoveryCode } from "@/lib/auth/codes";
 
 const loginCodeSchema = z
   .string()
@@ -27,6 +27,23 @@ export const loginSchema = z.object({
   organizationCode: z.string().trim().max(32, "Organization code is too long.").optional(),
   organizationSlug: z.string().trim().max(120, "Organization slug is too long.").optional(),
   password: z.string().min(1, "Enter your password.")
+});
+
+export const recoverSchema = z.object({
+  loginCode: loginCodeSchema,
+  newPassword: z
+    .string()
+    .min(10, "Password must be at least 10 characters.")
+    .max(128, "Password is too long."),
+  recoveryCode: z
+    .string()
+    .trim()
+    .min(8, "Enter your recovery code.")
+    .max(128, "Recovery code is too long.")
+    .transform(normalizeRecoveryCode)
+    .refine((value) => /^[a-z0-9-]+$/.test(value), {
+      message: "Use the recovery code exactly as shown, with dashes."
+    })
 });
 
 export const organizationSignupSchema = z.object({

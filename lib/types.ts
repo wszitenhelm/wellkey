@@ -146,6 +146,10 @@ export type SignupActionState = ActionState & {
   credentials?: CreatedCredentials;
 };
 
+export type RecoveryActionState = ActionState & {
+  credentials?: CreatedCredentials;
+};
+
 export type UserRecord = {
   user_id: string;
   login_code_hash: string;

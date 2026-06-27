@@ -1,12 +1,13 @@
 import { createSession, clearSession, getSession } from "@/lib/auth/session";
 import { authenticateUser, linkUserAfterLogin } from "@/lib/auth/login";
-import { loginSchema, signupSchema } from "@/lib/auth/validators";
+import { loginSchema, recoverSchema, signupSchema } from "@/lib/auth/validators";
 import { validateCsrf } from "@/lib/security/csrf/server";
 import { handleApiError, jsonApiError } from "@/lib/server/api/apiErrors";
 import { recordApiMetric, startApiTimer } from "@/lib/server/api/metrics";
 import { jsonApiResponse } from "@/lib/server/api/responses";
 import { rateLimitRequest } from "@/lib/server/ratelimits";
 import { createAnonymousUser } from "@/lib/db/users";
+import { recoverAnonymousAccount } from "@/lib/db/user-recovery";
 
 type AuthRequestBody = {
   loginCode?: unknown;
@@ -253,6 +254,90 @@ export async function handleAuthSignup(request: Request) {
     return withMetrics(
       "/api/auth/signup",
       handleApiError(request, error, "We could not create your account. Please try again."),
+      stopTimer
+    );
+  }
+}
+
+export async function handleAuthRecover(request: Request) {
+  const stopTimer = startApiTimer();
+  const csrfCheck = validateCsrf(request);
+
+  if (!csrfCheck.ok) {
+    return withMetrics(
+      "/api/auth/recover",
+      jsonApiError(request, {
+        code: "csrf_rejected",
+        message: csrfCheck.reason,
+        status: csrfCheck.status
+      }),
+      stopTimer
+    );
+  }
+
+  const limit = rateLimitRequest(request, {
+    limit: 5,
+    windowMs: 60_000
+  });
+
+  if (!limit.ok) {
+    return withMetrics(
+      "/api/auth/recover",
+      jsonApiError(request, {
+        code: "rate_limited",
+        message: "Too many recovery attempts. Please try again soon.",
+        status: 429
+      }),
+      stopTimer
+    );
+  }
+
+  try {
+    const parsed = recoverSchema.safeParse((await request.json()) as {
+      loginCode?: unknown;
+      newPassword?: unknown;
+      recoveryCode?: unknown;
+    });
+
+    if (!parsed.success) {
+      return withMetrics(
+        "/api/auth/recover",
+        jsonApiError(request, {
+          code: "invalid_request",
+          message: parsed.error.issues[0]?.message ?? "Invalid recovery request.",
+          status: 400
+        }),
+        stopTimer
+      );
+    }
+
+    const recovered = await recoverAnonymousAccount(parsed.data);
+
+    if (recovered.status === "invalid_recovery") {
+      return withMetrics(
+        "/api/auth/recover",
+        jsonApiError(request, {
+          code: "invalid_recovery",
+          message: "That login code and recovery code do not match.",
+          status: 401
+        }),
+        stopTimer
+      );
+    }
+
+    await createSession(recovered.value.userId);
+
+    return withMetrics(
+      "/api/auth/recover",
+      jsonApiResponse(request, {
+        credentials: recovered.value.credentials
+      }),
+      stopTimer
+    );
+  } catch (error) {
+    return withMetrics(
+      "/api/auth/recover",
+      handleApiError(request, error, "We could not recover your account. Please try again."),
       stopTimer
     );
   }

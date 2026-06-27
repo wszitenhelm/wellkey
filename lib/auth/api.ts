@@ -24,6 +24,10 @@ type SignupResponse = {
   credentials: CreatedCredentials;
 };
 
+type RecoveryResponse = {
+  credentials: CreatedCredentials;
+};
+
 async function parseAuthResponse<T>(response: Response) {
   const data = (await response.json()) as T & AuthErrorResponse;
 
@@ -70,6 +74,24 @@ export async function signupWithApi(input: {
   });
 
   return parseAuthResponse<SignupResponse>(response);
+}
+
+export async function recoverWithApi(input: {
+  loginCode: string;
+  newPassword: string;
+  recoveryCode: string;
+}) {
+  const csrfToken = await getCsrfToken();
+  const response = await fetch("/api/auth/recover", {
+    body: JSON.stringify(input),
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken
+    },
+    method: "POST"
+  });
+
+  return parseAuthResponse<RecoveryResponse>(response);
 }
 
 export async function logoutWithApi() {

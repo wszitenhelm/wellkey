@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { loginWithApi } from "@/lib/auth/api";
 import type { ActionState } from "@/lib/types";
@@ -69,6 +70,14 @@ export function LoginForm({
         placeholder="Enter your password"
         type="password"
       />
+      <div className="-mt-1 text-right">
+        <Link
+          className="text-sm font-medium text-foreground transition hover:text-accent"
+          href={"/recover" as never}
+        >
+          Use recovery code
+        </Link>
+      </div>
 
       <FormMessage state={state} />
 
