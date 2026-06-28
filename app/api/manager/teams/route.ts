@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import {
   assignOrganizationMemberToTeam,
   createOrganizationTeam,
@@ -52,12 +53,32 @@ export async function POST(request: Request) {
         name: String(body.name ?? ""),
         parentTeamId: body.parentTeamId ? String(body.parentTeamId) : undefined
       });
+      await recordOrganizationAuditLog(session, {
+        action: "team_created",
+        metadata: {
+          name: String(body.name ?? ""),
+          parentTeamId: body.parentTeamId ? String(body.parentTeamId) : null
+        }
+      });
     } else if (body.mode === "delete") {
       await deleteOrganizationTeam(session, String(body.teamId ?? ""));
+      await recordOrganizationAuditLog(session, {
+        action: "team_deleted",
+        metadata: {
+          teamId: String(body.teamId ?? "")
+        }
+      });
     } else {
       await assignOrganizationMemberToTeam(session, {
         memberId: String(body.memberId ?? ""),
         teamId: body.teamId ? String(body.teamId) : null
+      });
+      await recordOrganizationAuditLog(session, {
+        action: "team_assignment_updated",
+        metadata: {
+          memberId: String(body.memberId ?? ""),
+          teamId: body.teamId ? String(body.teamId) : null
+        }
       });
     }
 

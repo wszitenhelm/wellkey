@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import { uploadOrganizationLogo } from "@/lib/db/organization-branding";
 import { hasOrganizationPermission } from "@/lib/organizations/permissions";
 import { validateCsrf } from "@/lib/security/csrf/server";
@@ -47,6 +48,13 @@ export async function POST(request: Request) {
     }
 
     const logoUrl = await uploadOrganizationLogo(session, logo);
+    await recordOrganizationAuditLog(session, {
+      action: "logo_uploaded",
+      metadata: {
+        filename: logo.name,
+        size: logo.size
+      }
+    });
     return jsonApiResponse(request, { logoUrl, ok: true });
   } catch (error) {
     return handleApiError(request, error, "We could not upload your logo.");

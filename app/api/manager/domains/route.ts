@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import { createOrganizationDomain, verifyOrganizationDomain } from "@/lib/db/organization-domains";
 import { hasOrganizationPermission } from "@/lib/organizations/permissions";
 import { validateCsrf } from "@/lib/security/csrf/server";
@@ -37,6 +38,12 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { domain?: string };
     await createOrganizationDomain(session, String(body.domain ?? ""));
+    await recordOrganizationAuditLog(session, {
+      action: "domain_added",
+      metadata: {
+        domain: String(body.domain ?? "")
+      }
+    });
     return jsonApiResponse(request, { ok: true });
   } catch (error) {
     return handleApiError(request, error, "We could not add your domain.");
@@ -75,6 +82,12 @@ export async function PATCH(request: Request) {
   try {
     const body = (await request.json()) as { domainId?: string };
     await verifyOrganizationDomain(session, String(body.domainId ?? ""));
+    await recordOrganizationAuditLog(session, {
+      action: "domain_verified",
+      metadata: {
+        domainId: String(body.domainId ?? "")
+      }
+    });
     return jsonApiResponse(request, { ok: true });
   } catch (error) {
     return handleApiError(request, error, "We could not verify your domain yet.");

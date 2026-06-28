@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import { replaceOrganizationUserRoles } from "@/lib/db/organization-access";
 import { hasOrganizationPermission } from "@/lib/organizations/permissions";
 import { validateCsrf } from "@/lib/security/csrf/server";
@@ -38,6 +39,13 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { organizationUserId?: string; roleIds?: string[] };
 
     await replaceOrganizationUserRoles(session, String(body.organizationUserId ?? ""), body.roleIds ?? []);
+    await recordOrganizationAuditLog(session, {
+      action: "roles_updated",
+      metadata: {
+        organizationUserId: String(body.organizationUserId ?? ""),
+        roleIds: body.roleIds ?? []
+      }
+    });
     return jsonApiResponse(request, { ok: true });
   } catch (error) {
     return handleApiError(request, error, "We could not update role access.");

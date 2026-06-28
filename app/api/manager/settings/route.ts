@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import { updateOrganizationProfile } from "@/lib/db/organization-workspace";
 import { hasOrganizationPermission } from "@/lib/organizations/permissions";
 import { validateCsrf } from "@/lib/security/csrf/server";
@@ -48,6 +49,14 @@ export async function POST(request: Request) {
       logoUrl: String(body.logoUrl ?? ""),
       postalCode: String(body.postalCode ?? ""),
       websiteUrl: String(body.websiteUrl ?? "")
+    });
+    await recordOrganizationAuditLog(session, {
+      action: "organization_profile_updated",
+      metadata: {
+        displayName: String(body.displayName ?? ""),
+        legalName: String(body.legalName ?? ""),
+        websiteUrl: String(body.websiteUrl ?? "")
+      }
     });
 
     return jsonApiResponse(request, { ok: true });

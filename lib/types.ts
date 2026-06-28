@@ -137,6 +137,14 @@ export type OrganizationReportHistoryItem = {
   status: "pending" | "processing" | "ready" | "failed";
 };
 
+export type OrganizationAuditLogRecord = {
+  action: string;
+  actorEmail: string | null;
+  created_at: string;
+  id: string;
+  metadata: Record<string, unknown>;
+};
+
 export type CreatedCredentials = {
   loginCode: string;
   recoveryCode: string;

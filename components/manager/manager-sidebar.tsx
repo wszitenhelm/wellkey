@@ -12,7 +12,13 @@ import type { OrganizationWorkspaceData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type SidebarItem = {
-  href: "/manager" | "/manager/access" | "/manager/reporting" | "/manager/settings" | "/manager/teams";
+  href:
+    | "/manager"
+    | "/manager/access"
+    | "/manager/audit"
+    | "/manager/reporting"
+    | "/manager/settings"
+    | "/manager/teams";
   label: string;
 };
 
@@ -35,6 +41,9 @@ export function ManagerSidebar({ workspace }: Props) {
       : []),
     ...(hasOrganizationPermission(workspace.permissions, "manage_role_permissions")
       ? [{ href: "/manager/access" as const, label: "Access" }]
+      : []),
+    ...(hasOrganizationPermission(workspace.permissions, "view_audit_logs")
+      ? [{ href: "/manager/audit" as const, label: "Audit" }]
       : []),
     ...(hasAnyOrganizationPermission(workspace.permissions, ["manage_company_profile", "manage_domains"])
       ? [{ href: "/manager/settings" as const, label: "Settings" }]
@@ -62,7 +71,7 @@ export function ManagerSidebar({ workspace }: Props) {
               pathname === item.href ? "bg-accent text-accentForeground" : "hover:bg-foreground/5",
               collapsed && "px-0 text-center"
             )}
-            href={item.href}
+            href={item.href as never}
           >
             {collapsed ? item.label[0] : item.label}
           </Link>

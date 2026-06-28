@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import {
   createOrganizationReportExport,
   getLatestReportingSnapshot
@@ -54,6 +55,13 @@ export async function GET() {
 
   await createOrganizationReportExport(session, {
     kind: "current_status_export"
+  });
+  await recordOrganizationAuditLog(session, {
+    action: "report_exported",
+    metadata: {
+      exportFormat: "csv",
+      kind: "current_status_export"
+    }
   });
 
   return new Response(toCsv(rows), {

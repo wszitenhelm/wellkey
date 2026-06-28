@@ -1,4 +1,5 @@
 import { getOrganizationSession } from "@/lib/auth/organization-session";
+import { recordOrganizationAuditLog } from "@/lib/db/organization-audit";
 import { updateOrganizationWorkspaceSettings } from "@/lib/db/organization-workspace";
 import { hasOrganizationPermission } from "@/lib/organizations/permissions";
 import { validateCsrf } from "@/lib/security/csrf/server";
@@ -43,6 +44,16 @@ export async function POST(request: Request) {
       minimumReportingThreshold: Number(body.minimumReportingThreshold ?? 5),
       showExportButton: Boolean(body.showExportButton),
       showTeamBreakdowns: Boolean(body.showTeamBreakdowns)
+    });
+    await recordOrganizationAuditLog(session, {
+      action: "workspace_controls_updated",
+      metadata: {
+        allowDomainJoin: Boolean(body.allowDomainJoin),
+        allowInviteJoin: Boolean(body.allowInviteJoin),
+        minimumReportingThreshold: Number(body.minimumReportingThreshold ?? 5),
+        showExportButton: Boolean(body.showExportButton),
+        showTeamBreakdowns: Boolean(body.showTeamBreakdowns)
+      }
     });
 
     return jsonApiResponse(request, { ok: true });
