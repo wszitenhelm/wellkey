@@ -1,4 +1,5 @@
 import type { OrganizationAccessData, OrganizationSessionPayload } from "@/lib/types";
+import { getOrganizationInvites } from "@/lib/db/organization-invites";
 import { unwrapSupabaseData } from "@/lib/supabase/errors";
 import { getOrganizationSupabaseServerClient } from "@/lib/supabase/organization-server";
 
@@ -37,7 +38,7 @@ export async function getOrganizationAccessData(
   session: OrganizationSessionPayload
 ): Promise<OrganizationAccessData> {
   const supabase = await getOrganizationSupabaseServerClient(session);
-  const [roles, permissions, users, rolePermissions, userRoles] = await Promise.all([
+  const [roles, permissions, users, rolePermissions, userRoles, invites] = await Promise.all([
     (unwrapSupabaseData(
       await supabase
         .from("organization_roles")
@@ -70,7 +71,8 @@ export async function getOrganizationAccessData(
       await supabase
         .from("organization_user_roles")
         .select("organization_user_id, role_id")
-    ) ?? []) as UserRoleRow[]
+    ) ?? []) as UserRoleRow[],
+    getOrganizationInvites(session)
   ]);
 
   const permissionIdsByRoleId = new Map<string, Set<string>>();
@@ -91,6 +93,7 @@ export async function getOrganizationAccessData(
   });
 
   return {
+    invites,
     permissions,
     roles: roles.map((role) => ({
       ...role,

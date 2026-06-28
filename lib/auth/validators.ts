@@ -64,6 +64,23 @@ export const organizationLoginSchema = z.object({
   password: z.string().min(1, "Enter your password.")
 });
 
+export const organizationInviteSchema = z.object({
+  email: z.email("Enter a valid work email.").transform((value) => value.trim().toLowerCase())
+});
+
+export const organizationInviteAcceptSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name.")
+    .max(120, "Full name is too long."),
+  password: z
+    .string()
+    .min(10, "Password must be at least 10 characters.")
+    .max(128, "Password is too long."),
+  token: z.string().trim().min(16, "Invalid invite token.").max(256, "Invalid invite token.")
+});
+
 export const habitSchema = z.object({
   title: z
     .string()

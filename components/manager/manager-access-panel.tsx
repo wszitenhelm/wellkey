@@ -1,5 +1,6 @@
 import { ManagerBadge } from "@/components/manager/manager-badge";
 import { ManagerEmptyState } from "@/components/manager/manager-empty-state";
+import { ManagerInvitePanel } from "@/components/manager/manager-invite-panel";
 import { ManagerAccessUserRow } from "@/components/manager/manager-access-user-row";
 import { SoftCard } from "@/components/ui/soft-card";
 import { getOrganizationPermissionLabel } from "@/lib/organizations/labels";
@@ -63,6 +64,18 @@ export function ManagerAccessPanel({ data }: Props) {
               <ManagerAccessUserRow key={user.id} roles={data.roles} user={user} />
             ))
           )}
+        </div>
+      </SoftCard>
+
+      <SoftCard className="p-6 xl:col-span-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Invites</p>
+        <h2 className="mt-3 font-serif text-3xl leading-[0.96]">Invite another workspace user</h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Create a secure invite link for a work email so another admin, HR lead, or manager can
+          set a password and join this organization workspace.
+        </p>
+        <div className="mt-6">
+          <ManagerInvitePanel invites={data.invites} />
         </div>
       </SoftCard>
     </div>

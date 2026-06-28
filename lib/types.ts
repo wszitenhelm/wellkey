@@ -96,7 +96,15 @@ export type OrganizationAccessUser = {
   roleIds: string[];
 };
 
+export type OrganizationInviteRecord = {
+  created_at: string;
+  email: string | null;
+  expires_at: string;
+  id: string;
+};
+
 export type OrganizationAccessData = {
+  invites: OrganizationInviteRecord[];
   permissions: OrganizationPermissionRecord[];
   roles: OrganizationAccessRole[];
   users: OrganizationAccessUser[];

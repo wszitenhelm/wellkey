@@ -4,6 +4,7 @@ import {
 } from "@/lib/auth/organization-session";
 import { verifyPassword } from "@/lib/auth/password";
 import {
+  organizationInviteAcceptSchema,
   organizationLoginSchema,
   organizationSignupSchema
 } from "@/lib/auth/validators";
@@ -12,6 +13,7 @@ import {
   findOrganizationUserForLogin,
   getOrganizationPermissionsForUser
 } from "@/lib/db/organization-users";
+import { acceptOrganizationInvite } from "@/lib/db/organization-invites";
 import { validateCsrf } from "@/lib/security/csrf/server";
 import { handleApiError, jsonApiError } from "@/lib/server/api/apiErrors";
 import { recordApiMetric, startApiTimer } from "@/lib/server/api/metrics";
@@ -219,6 +221,101 @@ export async function handleOrganizationLogout(request: Request) {
     return withMetrics(
       "/api/org-auth/logout",
       handleApiError(request, error, "We could not log you out."),
+      stopTimer
+    );
+  }
+}
+
+export async function handleOrganizationInviteAccept(request: Request) {
+  const stopTimer = startApiTimer();
+  const csrfCheck = validateCsrf(request);
+
+  if (!csrfCheck.ok) {
+    return withMetrics(
+      "/api/org-auth/invite/accept",
+      jsonApiError(request, {
+        code: "csrf_rejected",
+        message: csrfCheck.reason,
+        status: csrfCheck.status
+      }),
+      stopTimer
+    );
+  }
+
+  const limit = rateLimitRequest(request, { limit: 5, windowMs: 60_000 });
+
+  if (!limit.ok) {
+    return withMetrics(
+      "/api/org-auth/invite/accept",
+      jsonApiError(request, {
+        code: "rate_limited",
+        message: "Too many invite attempts. Please try again soon.",
+        status: 429
+      }),
+      stopTimer
+    );
+  }
+
+  try {
+    const parsed = organizationInviteAcceptSchema.safeParse(
+      (await request.json()) as { fullName?: unknown; password?: unknown; token?: unknown }
+    );
+
+    if (!parsed.success) {
+      return withMetrics(
+        "/api/org-auth/invite/accept",
+        jsonApiError(request, {
+          code: "invalid_request",
+          message: parsed.error.issues[0]?.message ?? "Invalid invite acceptance request.",
+          status: 400
+        }),
+        stopTimer
+      );
+    }
+
+    const accepted = await acceptOrganizationInvite(parsed.data);
+
+    if (accepted.status === "invalid_invite") {
+      return withMetrics(
+        "/api/org-auth/invite/accept",
+        jsonApiError(request, {
+          code: "invalid_invite",
+          message: "This invite is no longer valid.",
+          status: 404
+        }),
+        stopTimer
+      );
+    }
+
+    if (accepted.status === "email_taken") {
+      return withMetrics(
+        "/api/org-auth/invite/accept",
+        jsonApiError(request, {
+          code: "email_taken",
+          message: "That work email already has an account.",
+          status: 409
+        }),
+        stopTimer
+      );
+    }
+
+    const permissions = await getOrganizationPermissionsForUser(accepted.value.organizationUserId);
+
+    await createOrganizationSession({
+      organizationId: accepted.value.organizationId,
+      organizationUserId: accepted.value.organizationUserId,
+      permissions
+    });
+
+    return withMetrics(
+      "/api/org-auth/invite/accept",
+      jsonApiResponse(request, { ok: true }),
+      stopTimer
+    );
+  } catch (error) {
+    return withMetrics(
+      "/api/org-auth/invite/accept",
+      handleApiError(request, error, "We could not accept that invite. Please try again."),
       stopTimer
     );
   }
